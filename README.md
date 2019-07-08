@@ -19,6 +19,7 @@ be 240V in this plug when you're at a J1772, you're fine. FYI, most cell phone c
 The C13 plugs into the onboard Zero charger port(C14), the C14 plugs into the CH4100 C13 plug and the 5-15 has a cell charger plugged into
 it that feeds 5v to the arduino.  I'll try to attach a pic so you can see. Note, watch out for those pesky 5-15 receptacles that have
 lights in them. The lights'll get hot when they get 240v. Get a receptacle with no lights. Also, get a C13/C14 cable that can handle
-15 amps (14AWG). FYI, you can get one with both connectors and just cut it in half.
+15 amps (14AWG)(Just remembered the onboard charger’s only going to pull about 6 Amps when connected to 240V...15 amp cable is probably
+unnecessary.) FYI, you can get one with both connectors and just cut it in half.
 
 The CH4100 seems good for about 2800W so with the onboard at 1300W I'm geting 4100W into the battery.
