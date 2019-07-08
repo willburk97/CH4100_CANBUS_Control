@@ -7,7 +7,7 @@
 #define SPI_CS_PIN 9 //CS Pin
 
 int led = 7;
-word outputvoltage = 1158; //set max Voltage to 116.2V (offset = 0.1) not pv_voltage if will turn off charger at 116 below
+word outputvoltage = 1140; //set max Voltage to 114.0V (offset = 0.1) NOTE: pv_voltage if statement will force off charger at 116
 word outputcurrent = 300; //set max Current to 30A (offset = 0.1)
 unsigned char voltbuf[30]; // buffer for binary-ish version of voltage.  i.e. 101011000 = 112v
 unsigned int volth; // hundreds value
@@ -65,7 +65,7 @@ void canRead(){
       if (bitRead(buf[1],0) == 0) Serial.print("Charger on  ");
       if (bitRead(buf[1],0) == 1) errorct++;
       Serial.println(errorct);
-      if (chargeron == 0xFC & errorct > 28) chargeron = 0xFB; // if 'commanded' on but found off a couple times, force off to prevent cycling 17 after 1st on, ~21 after 2nd on
+      if (chargeron == 0xFC & errorct > 28) chargeron = 0xFB; // if 'commanded' on but found off a couple times, force off to prevent cycling.  Will be 17 after 1st on, ~21 after 2nd on
             
       Serial.print("Battery voltage: ");
       float pv_voltage = (((float)buf[3]*256.0) + ((float)buf[2]))/10.0; //highByte/lowByte + offset
@@ -75,7 +75,7 @@ void canRead(){
       float pv_current = (3200-(((float)buf[5]*256.0) + ((float)buf[4])))/10.0; //highByte/lowByte + offset
       Serial.print(pv_current);
       Serial.println(" A");
-      if (millis() > 10000 & millis() < 16000) chargeron = 0xFC; // wait 10 seconds before turning on charger
+      if (millis() > 10000 & millis() < 16000) chargeron = 0xFC; // wait 10-ish seconds before turning on charger
       if(pv_voltage > 116 || pv_voltage < 80) chargeron = 0xFB; // if voltage reaches this level turn off charger
 
       if(cyclecounter==1){
@@ -114,18 +114,17 @@ void canRead(){
 
       if(voltbuf[cyclecounter-1]==1) Blink();
       cyclecounter++;
-      if(cyclecounter>j+5) cyclecounter = 1;
+      if(cyclecounter>j+5) cyclecounter = 1;  // once 5 cycles have passed since blinking has stopped, reset counter (start blinking again).
 
-
-      switch (buf[0]) { //Read out error byte
-        case B00000001: Serial.println("Error: CAN_BUS Error");break;
-        case B00010000: Serial.println("Error: No Input Voltage");break;
-      }
-
-      switch (buf[1]) { //Read out error byte
-        case B00000101: Serial.println("Error: Battery Not Connected");break;
-      }
-
+      if(bitRead(buf[0],0)) Serial.println("Error: CAN_BUS Error");
+      if(bitRead(buf[0],2)) Serial.println("Error: Hardware Issue");
+      if(bitRead(buf[0],4)) Serial.println("Error: Input Voltage Incorrect");
+      if(bitRead(buf[0],6)) Serial.println("Error: Charger Hot");
+//      if(bitRead(buf[1],0)) Serial.println("Not Charging");  // Listed above
+      if(bitRead(buf[1],2)) Serial.println("Error: Battery Voltage");
+      int k = errorct/2;
+      if((buf[0] != 0 || buf[1] != 0) && errorct > 30 && bitRead(k,3) && bitRead(k,0)==1) digitalWrite(led,HIGH); // flash led slowly if error (but let the voltage out now and then)
+      if((buf[0] != 0 || buf[1] != 0) && errorct > 30 && bitRead(k,3) && bitRead(k,0)==0) digitalWrite(led,LOW); //what he said...
     }
 
   }
@@ -148,10 +147,10 @@ void Blink(){
 String canWrite(unsigned char data[8], unsigned long int id){
 
   byte sndStat = CAN.sendMsgBuf(id, 1, 8, data); //Send message (ID, extended Frame, Datalength, Data)
-Serial.print(data[0],HEX); Serial.print(" ");
+  if(data[0] == 0xFC) Serial.println("Charger commanded on.");
+  if(data[0] == 0xFB) Serial.println("Charger commanded off.");
   if(sndStat == CAN_OK) //Status byte for transmission
     return "CAN message sent successfully to charger";
-//      return data;
   else
     return "Error during message transmission to charger";
 }
