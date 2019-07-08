@@ -123,8 +123,8 @@ void canRead(){
 //      if(bitRead(buf[1],0)) Serial.println("Not Charging");  // Listed above
       if(bitRead(buf[1],2)) Serial.println("Error: Battery Voltage");
       int k = errorct/2;
-      if((buf[0] != 0 || buf[1] != 0) && errorct > 30 && bitRead(k,3) && bitRead(k,0)==1) digitalWrite(led,HIGH); // flash led slowly if error (but let the voltage out now and then)
-      if((buf[0] != 0 || buf[1] != 0) && errorct > 30 && bitRead(k,3) && bitRead(k,0)==0) digitalWrite(led,LOW); //what he said...
+      if((buf[0] != 0 || buf[1] > 1) && errorct > 30 && bitRead(k,3) && bitRead(k,0)==1) digitalWrite(led,HIGH); // flash led slowly if error (but let the voltage out now and then)
+      if((buf[0] != 0 || buf[1] > 1) && errorct > 30 && bitRead(k,3) && bitRead(k,0)==0) digitalWrite(led,LOW); //what he said...
     }
 
   }
@@ -178,6 +178,7 @@ void myTimer1() { //Cyclic function called by the timer
 
 void setup() {
   pinMode(led, OUTPUT);
+  digitalWrite(led,HIGH);  //Start on so we'll know if CAN comms start.
   Serial.begin(115200); //Serial Port Initialize
 
   while(CAN_OK != CAN.begin(CAN_500KBPS)){ //CAN Bus initialisieren
