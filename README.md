@@ -3,7 +3,7 @@ Arduino Uno project to control (turn on) CH4100 Enpower charger for my Zero Moto
 Charger was OEM with 2.5kw ChargeTank.
 Credit to https://github.com/Lennart-O/TCCharger-voltage-current-control for original code.  
 I changed code to work with CH4100 charger and added code to blink led with current voltage.  
-I had added voltage limiting code but it may nt be necessary not that I figured out how to add 
+I had added voltage limiting code but it may not be necessary now that I figured out how to add 
 the voltage limit to the CANBUS message, Thanks Arlin Sansome!
 
 To make this work I used a Seeed CAN Shield V2.0.  On the (Zero specific I'm sure) signal cable into the charger:
